@@ -31,6 +31,9 @@
             margin-bottom: 5px;
             font-weight: 500;
         }
+        .query-col {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -57,26 +60,8 @@
                     <h5>数据查询</h5>
                     <div class="row" id="queryInputsContainer">
                         <!-- 这里会动态生成查询输入框 -->
-                        <div class="col-md-4">
-                            <div class="search-label" id="searchLabel1">请先上传文件</div>
-                            <div class="input-group">
-                                <input type="text" id="searchColumn1" class="form-control" placeholder="输入查询值" disabled>
-                                <button class="btn btn-primary query-btn" data-col-num="1">查询</button>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="search-label" id="searchLabel2">请先上传文件</div>
-                            <div class="input-group">
-                                <input type="text" id="searchColumn2" class="form-control" placeholder="输入查询值" disabled>
-                                <button class="btn btn-primary query-btn" data-col-num="2">查询</button>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="search-label" id="searchLabel3">请先上传文件</div>
-                            <div class="input-group">
-                                <input type="text" id="searchColumn3" class="form-control" placeholder="输入查询值" disabled>
-                                <button class="btn btn-primary query-btn" data-col-num="3">查询</button>
-                            </div>
+                        <div class="col-12 text-muted" id="noFileUploadedHint">
+                            请先上传Excel文件
                         </div>
                     </div>
                 </div>
@@ -96,9 +81,7 @@
                                 <thead>
                                     <tr id="tableHeaderRow">
                                         <!-- 这里会动态生成表头 -->
-                                        <th>请先上传文件</th>
-                                        <th>请先上传文件</th>
-                                        <th>请先上传文件</th>
+                                        <td colspan="3" class="text-center text-muted">请先上传Excel文件</td>
                                     </tr>
                                 </thead>
                                 <tbody id="resultsTable">
