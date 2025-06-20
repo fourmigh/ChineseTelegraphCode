@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强型 Excel数据查询系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin-top: 30px;
+        }
+        .query-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .results-table {
+            margin-top: 20px;
+        }
+        .file-info {
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .highlight {
+            background-color: #ffec99;
+            padding: 0 2px;
+        }
+        .search-label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .query-col {
+            margin-bottom: 15px;
+        }
+        .converter-section {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .converter-result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        .converter-output {
+            font-size: 1.1em;
+        }
+        .result-row {
+            display: flex;
+            margin-bottom: 8px;
+            padding: 5px;
+            background-color: white;
+            border-radius: 4px;
+        }
+        .result-label {
+            font-weight: bold;
+            min-width: 100px;
+            color: #495057;
+        }
+        .result-value {
+            flex-grow: 1;
+            word-break: break-all;
+        }
+        .text-muted {
+            color: #6c757d!important;
+        }
+        .text-danger {
+            color: #dc3545!important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">增强型 Excel数据查询系统</h1>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>上传Excel文件</h5>
+                    </div>
+                    <div class="card-body">
+                        <input type="file" id="excelFile" class="form-control" accept=".xlsx, .xls">
+                        <div id="fileInfo" class="file-info mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="converter-section">
+                    <h5>数据转换工具</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6>编码组合 → 名称组合</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-group mb-3">
+                                        <input type="text" id="codeInput" class="form-control" placeholder="输入编码组合">
+                                        <button class="btn btn-primary" id="codeToNameBtn">转换</button>
+                                    </div>
+                                    <div class="converter-result">
+                                        <div id="nameResult" class="converter-output"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>名称组合 → 编码组合</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="input-group mb-3">
+                                        <input type="text" id="nameInput" class="form-control" placeholder="输入名称组合">
+                                        <button class="btn btn-primary" id="nameToCodeBtn">转换</button>
+                                    </div>
+                                    <div class="converter-result">
+                                        <div id="codeResult" class="converter-output"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="query-section">
+                    <h5>数据查询</h5>
+                    <div class="row" id="queryInputsContainer">
+                        <div class="col-12 text-muted" id="noFileUploadedHint">
+                            请先上传Excel文件
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>查询结果</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultCount" class="mb-3"></div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered results-table">
+                                <thead>
+                                    <tr id="tableHeaderRow">
+                                        <td colspan="3" class="text-center text-muted">请先上传Excel文件</td>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsTable">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
