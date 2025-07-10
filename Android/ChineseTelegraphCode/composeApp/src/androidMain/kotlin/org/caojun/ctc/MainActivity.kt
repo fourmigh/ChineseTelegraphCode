@@ -13,8 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-//            App()
-            CompleteMaterial3ShowcaseWithLabels()
+            AppNavigation()
         }
     }
 }
@@ -22,5 +21,5 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+    AppNavigation()
 }
