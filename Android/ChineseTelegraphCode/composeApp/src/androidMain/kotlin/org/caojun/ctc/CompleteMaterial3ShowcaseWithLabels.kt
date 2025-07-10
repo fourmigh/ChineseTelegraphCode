@@ -28,6 +28,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
@@ -53,6 +55,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -64,6 +67,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -80,11 +87,11 @@ fun CompleteMaterial3ShowcaseWithLabels() {
     var textFieldValue by remember { mutableStateOf("") }
     var openDialog by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(0) }
-    var datePickerState by remember { mutableStateOf(false) }
-    var timePickerState by remember { mutableStateOf(false) }
     var chipSelected by remember { mutableStateOf(false) }
     var switchChecked by remember { mutableStateOf(true) }
     var rangeSliderPosition by remember { mutableStateOf(0.25f..0.75f) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
 
     Scaffold(
         topBar = {
@@ -386,6 +393,37 @@ fun CompleteMaterial3ShowcaseWithLabels() {
                                     Icon(Icons.Default.MoreVert, null)
                                 }
                             )
+                        }
+                    }
+                }
+            }
+
+            // 11. 日期选择器
+            ComponentSection("日期选择器 (DatePicker)") {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { showDatePicker = true }) {
+                        Text(selectedDate.toString() ?: "选择日期")
+                    }
+
+                    if (showDatePicker) {
+                        val datePickerState = rememberDatePickerState()
+                        DatePickerDialog(
+                            onDismissRequest = { showDatePicker = false },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        selectedDate = datePickerState.selectedDateMillis?.let {
+                                            Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                                        }
+                                        showDatePicker = false
+                                    }
+                                ) { Text("确定") }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDatePicker = false }) { Text("取消") }
+                            }
+                        ) {
+                            DatePicker(state = datePickerState)
                         }
                     }
                 }
