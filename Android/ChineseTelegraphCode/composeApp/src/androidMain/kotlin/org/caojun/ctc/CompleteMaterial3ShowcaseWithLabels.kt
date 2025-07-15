@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
@@ -343,7 +344,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
                         onClick = {},
                         label = { Text("操作") },
                         leadingIcon = {
-                            Icon(Icons.Default.Send, null)
+                            Icon(Icons.AutoMirrored.Filled.Send, null)
                         }
                     )
                 }
