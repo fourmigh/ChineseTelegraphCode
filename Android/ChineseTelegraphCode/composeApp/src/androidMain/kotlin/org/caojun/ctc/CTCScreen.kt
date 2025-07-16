@@ -40,78 +40,97 @@ fun CTCScreen() {
     var tfvCiphertext by remember { mutableStateOf("") }
     var debugInfo by remember { mutableStateOf("初始化中...") }
 
+    // 使用remember保存DebugLogger实例
+    val debugLogger = remember { DebugLogger() }
+
     // 在组合中加载Excel数据
     val codes = remember { mutableStateOf<List<Array<String>>>(emptyList()) }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        debugInfo = "正在加载资源..."
+        debugLogger.clear()
+        debugLogger.addSection("资源加载", "正在加载资源...")
         val (loadedData, resourceDebug) = loadExcelFromAssetsWithDebug(context, "电报码.xlsx")
         codes.value = loadedData
-        debugInfo = """
-            资源加载结果:
-            $resourceDebug
+        debugLogger.addSection("资源加载结果", """
             加载行数: ${loadedData.size}
             首行数据: ${loadedData.firstOrNull()?.joinToString() ?: "无数据"}
-        """.trimIndent()
+            $resourceDebug
+        """.trimIndent())
+        debugInfo = debugLogger.getLog()
     }
 
     // 明文转密文的函数
     fun plainToCipher() {
+        debugLogger.addSection("明文转密文", "开始转换...")
+
         if (codes.value.isEmpty()) {
             tfvCiphertext = "错误: 电报码数据未加载"
+            debugLogger.addLog("错误: 电报码数据未加载")
+            debugInfo = debugLogger.getLog()
             return
         }
 
         val result = StringBuilder()
+        debugLogger.addLog("输入明文: $tfvPlaintext")
+
         for (char in tfvPlaintext) {
-            // 在Excel数据中查找第2列(索引1)匹配的字符
             val found = codes.value.firstOrNull { row ->
                 row.getOrNull(1)?.contains(char.toString()) == true
             }
 
             if (found != null && found.isNotEmpty()) {
-                // 取第1列(索引0)作为密文
+                debugLogger.addLog("匹配成功: '$char' -> '${found[0]}'")
                 result.append(found[0])
             } else {
-                // 未找到的字符原样输出
+                debugLogger.addLog("未匹配: '$char'")
                 result.append(char)
             }
         }
+
         tfvCiphertext = result.toString()
+        debugLogger.addLog("转换结果: $tfvCiphertext")
+        debugInfo = debugLogger.getLog()
     }
 
     // 密文转明文的函数
     fun cipherToPlain() {
+        debugLogger.addSection("密文转明文", "开始转换...")
+
         if (codes.value.isEmpty()) {
             tfvPlaintext = "错误: 电报码数据未加载"
+            debugLogger.addLog("错误: 电报码数据未加载")
+            debugInfo = debugLogger.getLog()
             return
         }
 
         val result = StringBuilder()
+        debugLogger.addLog("输入密文: $tfvCiphertext")
+
         var i = 0
         while (i < tfvCiphertext.length) {
-            // 检查剩余长度是否足够4位数字
             if (i + 4 <= tfvCiphertext.length) {
                 val potentialCode = tfvCiphertext.substring(i, i + 4)
-                // 在Excel中查找第1列(索引0)匹配的4位数字
                 val found = codes.value.firstOrNull { row ->
                     row.getOrNull(0)?.equals(potentialCode) == true
                 }
 
                 if (found != null && found.size >= 2) {
-                    // 取第2列(索引1)作为明文
+                    debugLogger.addLog("匹配成功: '$potentialCode' -> '${found[1]}'")
                     result.append(found[1])
                     i += 4
                     continue
                 }
             }
 
-            // 如果不是有效的4位数字码，保留原字符
+            debugLogger.addLog("未匹配: '${tfvCiphertext[i]}'")
             result.append(tfvCiphertext[i])
             i++
         }
+
         tfvPlaintext = result.toString()
+        debugLogger.addLog("转换结果: $tfvPlaintext")
+        debugInfo = debugLogger.getLog()
     }
 
     Column(
@@ -119,8 +138,8 @@ fun CTCScreen() {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
-            .imePadding()  // 添加这个修饰符
-            .navigationBarsPadding(),  // 可选：避免导航栏遮挡,
+            .imePadding()
+            .navigationBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text("电报码", style = MaterialTheme.typography.displayLarge)
