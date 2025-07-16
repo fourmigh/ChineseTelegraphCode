@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import com.alibaba.excel.EasyExcel
 import com.alibaba.excel.context.AnalysisContext
@@ -53,11 +56,71 @@ fun CTCScreen() {
         """.trimIndent()
     }
 
+    // 明文转密文的函数
+    fun plainToCipher() {
+        if (codes.value.isEmpty()) {
+            tfvCiphertext = "错误: 电报码数据未加载"
+            return
+        }
+
+        val result = StringBuilder()
+        for (char in tfvPlaintext) {
+            // 在Excel数据中查找第2列(索引1)匹配的字符
+            val found = codes.value.firstOrNull { row ->
+                row.getOrNull(1)?.contains(char.toString()) == true
+            }
+
+            if (found != null && found.isNotEmpty()) {
+                // 取第1列(索引0)作为密文
+                result.append(found[0])
+            } else {
+                // 未找到的字符原样输出
+                result.append(char)
+            }
+        }
+        tfvCiphertext = result.toString()
+    }
+
+    // 密文转明文的函数
+    fun cipherToPlain() {
+        if (codes.value.isEmpty()) {
+            tfvPlaintext = "错误: 电报码数据未加载"
+            return
+        }
+
+        val result = StringBuilder()
+        var i = 0
+        while (i < tfvCiphertext.length) {
+            // 检查剩余长度是否足够4位数字
+            if (i + 4 <= tfvCiphertext.length) {
+                val potentialCode = tfvCiphertext.substring(i, i + 4)
+                // 在Excel中查找第1列(索引0)匹配的4位数字
+                val found = codes.value.firstOrNull { row ->
+                    row.getOrNull(0)?.equals(potentialCode) == true
+                }
+
+                if (found != null && found.size >= 2) {
+                    // 取第2列(索引1)作为明文
+                    result.append(found[1])
+                    i += 4
+                    continue
+                }
+            }
+
+            // 如果不是有效的4位数字码，保留原字符
+            result.append(tfvCiphertext[i])
+            i++
+        }
+        tfvPlaintext = result.toString()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(16.dp)
+            .imePadding()  // 添加这个修饰符
+            .navigationBarsPadding(),  // 可选：避免导航栏遮挡,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text("电报码", style = MaterialTheme.typography.displayLarge)
@@ -70,7 +133,7 @@ fun CTCScreen() {
                 label = { Text("明文") }
             )
         }
-        Button(onClick = {}) { Text("明文 -> 密文") }
+        Button(onClick = { plainToCipher() }) { Text("明文 -> 密文") }
 
         LabeledComponent("请输入密文") {
             OutlinedTextField(
@@ -79,7 +142,7 @@ fun CTCScreen() {
                 label = { Text("密文") }
             )
         }
-        Button(onClick = {}) { Text("密文 -> 明文") }
+        Button(onClick = { cipherToPlain() }) { Text("密文 -> 明文") }
     }
 }
 
