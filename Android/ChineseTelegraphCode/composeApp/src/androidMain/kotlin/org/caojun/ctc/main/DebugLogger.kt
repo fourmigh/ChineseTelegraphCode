@@ -1,4 +1,4 @@
-package org.caojun.ctc
+package org.caojun.ctc.main
 
 /**
  * 记录调试日志的类
