@@ -41,22 +41,14 @@ class CTCHelper(private val context: Context) {
     /**
      * 明文转密文（兼容原功能，偏移量为0时直接转换）
      */
-    fun plainToCipher(plaintext: String, offset: Int = 0, debugLogger: DebugLogger? = null): String {
-        if (offset == 0) {
-            debugLogger?.addLog("偏移量为0，直接转换电报码")
-            return convertPlainToCipher(plaintext, debugLogger)
-        }
+    fun plainToCipher(plaintext: String, debugLogger: DebugLogger? = null, offset: Int = 0): String {
         return encrypt(plaintext, offset, debugLogger)
     }
 
     /**
      * 密文转明文（兼容原功能，偏移量为0时直接转换）
      */
-    fun cipherToPlain(ciphertext: String, offset: Int = 0, debugLogger: DebugLogger? = null): String {
-        if (offset == 0) {
-            debugLogger?.addLog("偏移量为0，直接转换电报码")
-            return convertCipherToPlain(ciphertext, debugLogger)
-        }
+    fun cipherToPlain(ciphertext: String, debugLogger: DebugLogger? = null, offset: Int = 0): String {
         return decrypt(ciphertext, offset, debugLogger)
     }
 
@@ -147,77 +139,6 @@ class CTCHelper(private val context: Context) {
 
         val plaintext = result.toString()
         debugLogger?.addLog("解密结果: $plaintext")
-        return plaintext
-    }
-
-    /**
-     * 明文转密文（原功能，无偏移）
-     */
-    private fun convertPlainToCipher(plaintext: String, debugLogger: DebugLogger? = null): String {
-        debugLogger?.addSection("明文转密文（无偏移）", "开始转换...")
-        debugLogger?.addLog("输入明文: $plaintext")
-
-        if (codes.isEmpty()) {
-            debugLogger?.addLog("错误: 电报码数据未加载")
-            return "错误: 电报码数据未加载"
-        }
-
-        val result = StringBuilder()
-        for (char in plaintext) {
-            val found = codes.firstOrNull { row ->
-                row.getOrNull(1)?.contains(char.toString()) == true
-            }
-
-            if (found != null && found.isNotEmpty()) {
-                debugLogger?.addLog("匹配成功: '$char' -> '${found[0]}'")
-                result.append(found[0])
-            } else {
-                debugLogger?.addLog("未匹配: '$char'")
-                result.append(char)
-            }
-        }
-
-        val ciphertext = result.toString()
-        debugLogger?.addLog("转换结果: $ciphertext")
-        return ciphertext
-    }
-
-    /**
-     * 密文转明文（原功能，无偏移）
-     */
-    private fun convertCipherToPlain(ciphertext: String, debugLogger: DebugLogger? = null): String {
-        debugLogger?.addSection("密文转明文（无偏移）", "开始转换...")
-        debugLogger?.addLog("输入密文: $ciphertext")
-
-        if (codes.isEmpty()) {
-            debugLogger?.addLog("错误: 电报码数据未加载")
-            return "错误: 电报码数据未加载"
-        }
-
-        val result = StringBuilder()
-        var i = 0
-        while (i < ciphertext.length) {
-            if (i + 4 <= ciphertext.length) {
-                val potentialCode = ciphertext.substring(i, i + 4)
-                val found = codes.firstOrNull { row ->
-                    row.getOrNull(0)?.equals(potentialCode) == true
-                }
-
-                if (found != null && found.size >= 2) {
-                    debugLogger?.addLog("匹配成功: '$potentialCode' -> '${found[1]}'")
-                    result.append(found[1])
-                    i += 4
-                    continue
-                }
-            }
-
-            debugLogger?.addLog("未匹配: '${ciphertext[i]}'")
-            result.append(ciphertext[i])
-            i++
-        }
-
-        val plaintext = result.toString()
-        debugLogger?.addLog("转换结果: $plaintext")
         return plaintext
     }
 

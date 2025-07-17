@@ -99,10 +99,10 @@ fun CTCScreen() {
         )
 
         Button(onClick = {
-            tfvCodetext = ctcHelper.plainToCipher(tfvPlaintext, tfvKey.toInt(), debugLogger)
+            tfvCodetext = ctcHelper.plainToCipher(tfvPlaintext, debugLogger, tfvKey.toInt())
             debugInfo = debugLogger.getLog()
 
-            tfvCiphertext = ctcHelper.cipherToPlain(tfvCodetext, 0, debugLogger)
+            tfvCiphertext = ctcHelper.cipherToPlain(tfvCodetext, debugLogger)
             debugInfo = debugLogger.getLog()
         }) {
             Text("汉字 -> 电报码 -> 密文")
@@ -116,7 +116,7 @@ fun CTCScreen() {
         )
 
         Button(onClick = {
-            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, tfvKey.toInt(), debugLogger)
+            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, debugLogger, tfvKey.toInt())
             debugInfo = debugLogger.getLog()
         }) {
             Text("电报码 -> 汉字")
@@ -130,10 +130,10 @@ fun CTCScreen() {
         )
 
         Button(onClick = {
-            tfvCodetext = ctcHelper.plainToCipher(tfvCiphertext, 0, debugLogger)
+            tfvCodetext = ctcHelper.plainToCipher(tfvCiphertext, debugLogger)
             debugInfo = debugLogger.getLog()
 
-            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, tfvKey.toInt(), debugLogger)
+            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, debugLogger, tfvKey.toInt())
             debugInfo = debugLogger.getLog()
         }) {
             Text("密文 -> 电报码 -> 汉字")
