@@ -1,8 +1,8 @@
 package org.caojun.ctc.main
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -10,55 +10,53 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-/**
- * 首页
- */
 @Preview
 @Composable
 fun CTCScreen() {
-    var tfvPlaintext by remember { mutableStateOf("") }
-    var tfvCodetext by remember { mutableStateOf("") }
-    var tfvCiphertext by remember { mutableStateOf("") }
-    var debugInfo by remember { mutableStateOf("初始化中...") }
-    var tfvKey by remember { mutableStateOf("0") }
-
-    val debugLogger = remember { DebugLogger() }
     val context = LocalContext.current
     val ctcHelper = remember { CTCHelper(context) }
 
+    var switchChecked by remember { mutableStateOf(true) }
+    var tfvKey by remember { mutableStateOf("0") }
+    var tfvPlaintext by remember { mutableStateOf("") }
+    var tfvCodetext by remember { mutableStateOf("") }
+    var tfvCiphertext by remember { mutableStateOf("") }
+
+    // 初始化加载电报码表
     LaunchedEffect(Unit) {
-        debugLogger.clear()
-        debugLogger.addSection("资源加载", "正在加载资源...")
-
         ctcHelper.loadExcelFromAssets("电报码.xlsx")
-            .onSuccess {
-                debugLogger.addSection("资源加载结果", """
-                    加载行数: ${ctcHelper.getDataSize()}
-                    首行数据: ${ctcHelper.getFirstRowData()}
-                """.trimIndent())
-            }
-            .onFailure {
-                debugLogger.addLog("加载失败: ${it.message}")
-            }
+    }
 
-        debugInfo = debugLogger.getLog()
+    // 当明文变化且处于加密模式时，实时加密
+    LaunchedEffect(tfvPlaintext, switchChecked, tfvKey) {
+        if (switchChecked && tfvPlaintext.isNotEmpty()) {
+            tfvCodetext = ctcHelper.plainToCipher(tfvPlaintext, tfvKey.toIntOrNull())
+            tfvCiphertext = ctcHelper.cipherToPlain(tfvCodetext)
+        }
+    }
+
+    // 当密文变化且处于解密模式时，实时解密
+    LaunchedEffect(tfvCiphertext, switchChecked, tfvKey) {
+        if (!switchChecked && tfvCiphertext.isNotEmpty()) {
+            tfvCodetext = ctcHelper.plainToCipher(tfvCiphertext)
+            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, tfvKey.toIntOrNull())
+        }
     }
 
     Column(
@@ -71,72 +69,35 @@ fun CTCScreen() {
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text("电报码", style = MaterialTheme.typography.displayLarge)
-        Text(debugInfo,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onLongPress = {
-                            debugLogger.clear()
-                            debugInfo = "日志已清空"
-                        }
-                    )
-                })
-
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Switch(
+                checked = switchChecked,
+                onCheckedChange = { switchChecked = it }
+            )
+            Text(if (switchChecked) "加密" else "解密", modifier = Modifier.padding(start = 8.dp))
+            OutlinedTextField(
+                value = tfvKey,
+                onValueChange = { tfvKey = it },
+                label = { Text("密钥") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         OutlinedTextField(
-            value = tfvKey,
-            onValueChange = { tfvKey = it },
-            label = { Text("密钥") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
+            enabled = switchChecked,
             value = tfvPlaintext,
             onValueChange = { tfvPlaintext = it },
-            label = { Text("汉字") },
+            label = { Text(if (switchChecked) "明文" else "解密结果") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        Button(onClick = {
-            tfvCodetext = ctcHelper.plainToCipher(tfvPlaintext, debugLogger, tfvKey.toInt())
-            debugInfo = debugLogger.getLog()
-
-            tfvCiphertext = ctcHelper.cipherToPlain(tfvCodetext, debugLogger)
-            debugInfo = debugLogger.getLog()
-        }) {
-            Text("汉字 -> 电报码 -> 密文")
-        }
-
         OutlinedTextField(
-            value = tfvCodetext,
-            onValueChange = { tfvCodetext = it },
-            label = { Text("电报码") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Button(onClick = {
-            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, debugLogger, tfvKey.toInt())
-            debugInfo = debugLogger.getLog()
-        }) {
-            Text("电报码 -> 汉字")
-        }
-
-        OutlinedTextField(
+            enabled = !switchChecked,
             value = tfvCiphertext,
             onValueChange = { tfvCiphertext = it },
-            label = { Text("密文") },
+            label = { Text(if (switchChecked) "加密结果" else "密文") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        Button(onClick = {
-            tfvCodetext = ctcHelper.plainToCipher(tfvCiphertext, debugLogger)
-            debugInfo = debugLogger.getLog()
-
-            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, debugLogger, tfvKey.toInt())
-            debugInfo = debugLogger.getLog()
-        }) {
-            Text("密文 -> 电报码 -> 汉字")
-        }
     }
 }

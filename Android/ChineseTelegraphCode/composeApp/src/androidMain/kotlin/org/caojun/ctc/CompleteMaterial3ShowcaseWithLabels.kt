@@ -109,7 +109,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // 1. 文本组件
-        ComponentSection("文本组件 (Text)") {
+        ComponentSection("1. 文本组件 (Text)") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 LabeledComponent("DisplayLarge - 大标题") {
                     Text("大标题", style = MaterialTheme.typography.displayLarge)
@@ -127,7 +127,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 2. 按钮组件
-        ComponentSection("按钮组件 (Button)") {
+        ComponentSection("2. 按钮组件 (Button)") {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 LabeledComponent("Button - 填充按钮") {
                     Button(onClick = {}) { Text("确定") }
@@ -147,7 +147,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 3. 选择控件
-        ComponentSection("选择控件 (Selection Controls)") {
+        ComponentSection("3. 选择控件 (Selection Controls)") {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 LabeledComponent("Checkbox - 复选框") {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -189,7 +189,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 4. 滑块组件
-        ComponentSection("滑块组件 (Slider)") {
+        ComponentSection("4. 滑块组件 (Slider)") {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 LabeledComponent("Slider - 单值滑块") {
                     Slider(
@@ -210,7 +210,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 5. 输入组件
-        ComponentSection("输入组件 (Text Fields)") {
+        ComponentSection("5. 输入组件 (Text Fields)") {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 LabeledComponent("OutlinedTextField - 轮廓输入框") {
                     OutlinedTextField(
@@ -231,7 +231,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 6. 卡片组件
-        ComponentSection("卡片组件 (Card)") {
+        ComponentSection("6. 卡片组件 (Card)") {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 LabeledComponent("ElevatedCard - 高架卡片") {
                     ElevatedCard(
@@ -259,7 +259,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 7. 对话框和菜单
-        ComponentSection("对话框和菜单 (Dialogs & Menus)") {
+        ComponentSection("7. 对话框和菜单 (Dialogs & Menus)") {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 LabeledComponent("AlertDialog - 警告对话框") {
                     Button(onClick = { openDialog = true }) {
@@ -309,7 +309,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 8. 进度指示器
-        ComponentSection("进度指示器 (Progress Indicators)") {
+        ComponentSection("8. 进度指示器 (Progress Indicators)") {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(32.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -330,7 +330,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 9. 芯片组件
-        ComponentSection("芯片组件 (Chips)") {
+        ComponentSection("9. 芯片组件 (Chips)") {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 LabeledComponent("FilterChip - 过滤芯片") {
                     FilterChip(
@@ -352,7 +352,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 10. 列表组件
-        ComponentSection("列表组件 (Lists)") {
+        ComponentSection("10. 列表组件 (Lists)") {
             LabeledComponent("ListItem - 列表项") {
                 ElevatedCard(modifier = Modifier.fillMaxWidth()) {
                     Column {
@@ -379,7 +379,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 11. 日期选择器
-        ComponentSection("日期选择器 (DatePicker)") {
+        ComponentSection("11. 日期选择器 (DatePicker)") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = { showDatePicker = true }) {
                     Text(selectedDate?.toString() ?: "选择日期")
@@ -410,7 +410,7 @@ fun CompleteMaterial3ShowcaseWithLabels() {
         }
 
         // 12. 时间选择器（使用原生实现）
-        ComponentSection("时间选择器 (TimePicker)") {
+        ComponentSection("12. 时间选择器 (TimePicker)") {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = { showTimePicker = true }) {
                     Text(selectedTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "选择时间")

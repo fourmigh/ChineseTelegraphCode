@@ -41,21 +41,27 @@ class CTCHelper(private val context: Context) {
     /**
      * 明文转密文（兼容原功能，偏移量为0时直接转换）
      */
-    fun plainToCipher(plaintext: String, debugLogger: DebugLogger? = null, offset: Int = 0): String {
-        return encrypt(plaintext, offset, debugLogger)
+    fun plainToCipher(plaintext: String, offset: Int? = 0): String {
+        return encrypt(plaintext, offset ?: 0)
+    }
+    fun plainToCipher(plaintext: String, debugLogger: DebugLogger? = null, offset: Int? = 0): String {
+        return encrypt(plaintext, offset ?: 0, debugLogger)
     }
 
     /**
      * 密文转明文（兼容原功能，偏移量为0时直接转换）
      */
-    fun cipherToPlain(ciphertext: String, debugLogger: DebugLogger? = null, offset: Int = 0): String {
-        return decrypt(ciphertext, offset, debugLogger)
+    fun cipherToPlain(ciphertext: String, offset: Int? = 0): String {
+        return decrypt(ciphertext, offset ?: 0)
+    }
+    fun cipherToPlain(ciphertext: String, debugLogger: DebugLogger? = null, offset: Int? = 0): String {
+        return decrypt(ciphertext, offset ?: 0, debugLogger)
     }
 
     /**
      * 加密明文（数字偏移）
      */
-    private fun encrypt(plaintext: String, offset: Int, debugLogger: DebugLogger? = null): String {
+    private fun encrypt(plaintext: String, offset: Int = 0, debugLogger: DebugLogger? = null): String {
         debugLogger?.addSection("加密（偏移=$offset）", "开始转换...")
         debugLogger?.addLog("输入明文: $plaintext")
 
@@ -97,7 +103,7 @@ class CTCHelper(private val context: Context) {
     /**
      * 解密密文（数字偏移）
      */
-    private fun decrypt(ciphertext: String, offset: Int, debugLogger: DebugLogger? = null): String {
+    private fun decrypt(ciphertext: String, offset: Int = 0, debugLogger: DebugLogger? = null): String {
         debugLogger?.addSection("解密（偏移=$offset）", "开始转换...")
         debugLogger?.addLog("输入密文: $ciphertext")
 
