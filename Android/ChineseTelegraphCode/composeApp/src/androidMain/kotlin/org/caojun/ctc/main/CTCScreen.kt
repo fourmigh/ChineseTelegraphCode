@@ -1,5 +1,6 @@
 package org.caojun.ctc.main
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,10 +17,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -31,8 +34,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun CTCScreen() {
     var tfvPlaintext by remember { mutableStateOf("") }
+    var tfvCodetext by remember { mutableStateOf("") }
     var tfvCiphertext by remember { mutableStateOf("") }
     var debugInfo by remember { mutableStateOf("初始化中...") }
+    var tfvKey by remember { mutableStateOf("0") }
 
     val debugLogger = remember { DebugLogger() }
     val context = LocalContext.current
@@ -66,20 +71,55 @@ fun CTCScreen() {
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text("电报码", style = MaterialTheme.typography.displayLarge)
-        Text(debugInfo, style = MaterialTheme.typography.bodyMedium)
+        Text(debugInfo,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            debugLogger.clear()
+                            debugInfo = "日志已清空"
+                        }
+                    )
+                })
+
+        OutlinedTextField(
+            value = tfvKey,
+            onValueChange = { tfvKey = it },
+            label = { Text("密钥") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         OutlinedTextField(
             value = tfvPlaintext,
             onValueChange = { tfvPlaintext = it },
-            label = { Text("明文") },
+            label = { Text("汉字") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Button(onClick = {
-            tfvCiphertext = ctcHelper.plainToCipher(tfvPlaintext, debugLogger)
+            tfvCodetext = ctcHelper.plainToCipher(tfvPlaintext, tfvKey.toInt(), debugLogger)
+            debugInfo = debugLogger.getLog()
+
+            tfvCiphertext = ctcHelper.cipherToPlain(tfvCodetext, 0, debugLogger)
             debugInfo = debugLogger.getLog()
         }) {
-            Text("明文 -> 密文")
+            Text("汉字 -> 电报码 -> 密文")
+        }
+
+        OutlinedTextField(
+            value = tfvCodetext,
+            onValueChange = { tfvCodetext = it },
+            label = { Text("电报码") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Button(onClick = {
+            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, tfvKey.toInt(), debugLogger)
+            debugInfo = debugLogger.getLog()
+        }) {
+            Text("电报码 -> 汉字")
         }
 
         OutlinedTextField(
@@ -90,10 +130,13 @@ fun CTCScreen() {
         )
 
         Button(onClick = {
-            tfvPlaintext = ctcHelper.cipherToPlain(tfvCiphertext, debugLogger)
+            tfvCodetext = ctcHelper.plainToCipher(tfvCiphertext, 0, debugLogger)
+            debugInfo = debugLogger.getLog()
+
+            tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, tfvKey.toInt(), debugLogger)
             debugInfo = debugLogger.getLog()
         }) {
-            Text("密文 -> 明文")
+            Text("密文 -> 电报码 -> 汉字")
         }
     }
 }

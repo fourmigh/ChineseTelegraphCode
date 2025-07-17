@@ -8,7 +8,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 /**
- * 电报码转换工具类
+ * 电报码转换工具类（支持明文/密文转换及数字偏移加密/解密）
  */
 class CTCHelper(private val context: Context) {
     private val codes = mutableListOf<Array<String>>()
@@ -39,10 +39,122 @@ class CTCHelper(private val context: Context) {
     }
 
     /**
-     * 明文转密文
+     * 明文转密文（兼容原功能，偏移量为0时直接转换）
      */
-    fun plainToCipher(plaintext: String, debugLogger: DebugLogger? = null): String {
-        debugLogger?.addSection("明文转密文", "开始转换...")
+    fun plainToCipher(plaintext: String, offset: Int = 0, debugLogger: DebugLogger? = null): String {
+        if (offset == 0) {
+            debugLogger?.addLog("偏移量为0，直接转换电报码")
+            return convertPlainToCipher(plaintext, debugLogger)
+        }
+        return encrypt(plaintext, offset, debugLogger)
+    }
+
+    /**
+     * 密文转明文（兼容原功能，偏移量为0时直接转换）
+     */
+    fun cipherToPlain(ciphertext: String, offset: Int = 0, debugLogger: DebugLogger? = null): String {
+        if (offset == 0) {
+            debugLogger?.addLog("偏移量为0，直接转换电报码")
+            return convertCipherToPlain(ciphertext, debugLogger)
+        }
+        return decrypt(ciphertext, offset, debugLogger)
+    }
+
+    /**
+     * 加密明文（数字偏移）
+     */
+    private fun encrypt(plaintext: String, offset: Int, debugLogger: DebugLogger? = null): String {
+        debugLogger?.addSection("加密（偏移=$offset）", "开始转换...")
+        debugLogger?.addLog("输入明文: $plaintext")
+
+        if (codes.isEmpty()) {
+            debugLogger?.addLog("错误: 电报码数据未加载")
+            return "错误: 电报码数据未加载"
+        }
+
+        val result = StringBuilder()
+        for (char in plaintext) {
+            val found = codes.firstOrNull { row ->
+                row.getOrNull(1)?.contains(char.toString()) == true
+            }
+
+            if (found != null && found.isNotEmpty()) {
+                val originalCode = found[0].toIntOrNull() ?: continue
+                val encryptedCode = (originalCode + offset).toString().padStart(4, '0')
+
+                // 检查加密后的电报码是否存在
+                val isValid = codes.any { it[0] == encryptedCode }
+                if (isValid) {
+                    debugLogger?.addLog("加密成功: '$char' ($originalCode) -> '$encryptedCode'")
+                    result.append(encryptedCode)
+                } else {
+                    debugLogger?.addLog("加密后无效码: '$encryptedCode'，保留原文")
+                    result.append(char)
+                }
+            } else {
+                debugLogger?.addLog("未匹配: '$char'")
+                result.append(char)
+            }
+        }
+
+        val ciphertext = result.toString()
+        debugLogger?.addLog("加密结果: $ciphertext")
+        return ciphertext
+    }
+
+    /**
+     * 解密密文（数字偏移）
+     */
+    private fun decrypt(ciphertext: String, offset: Int, debugLogger: DebugLogger? = null): String {
+        debugLogger?.addSection("解密（偏移=$offset）", "开始转换...")
+        debugLogger?.addLog("输入密文: $ciphertext")
+
+        if (codes.isEmpty()) {
+            debugLogger?.addLog("错误: 电报码数据未加载")
+            return "错误: 电报码数据未加载"
+        }
+
+        val result = StringBuilder()
+        var i = 0
+        while (i < ciphertext.length) {
+            if (i + 4 <= ciphertext.length) {
+                val potentialCode = ciphertext.substring(i, i + 4)
+                val originalCode = potentialCode.toIntOrNull() ?: run {
+                    debugLogger?.addLog("无效数字: '$potentialCode'")
+                    result.append(ciphertext[i])
+                    i++
+                    continue
+                }
+
+                // 反向偏移计算
+                val decryptedCode = (originalCode - offset).toString().padStart(4, '0')
+                val found = codes.firstOrNull { row ->
+                    row.getOrNull(0)?.equals(decryptedCode) == true
+                }
+
+                if (found != null && found.size >= 2) {
+                    debugLogger?.addLog("解密成功: '$potentialCode' -> '${found[1]}'")
+                    result.append(found[1])
+                    i += 4
+                    continue
+                }
+            }
+
+            debugLogger?.addLog("未匹配: '${ciphertext[i]}'")
+            result.append(ciphertext[i])
+            i++
+        }
+
+        val plaintext = result.toString()
+        debugLogger?.addLog("解密结果: $plaintext")
+        return plaintext
+    }
+
+    /**
+     * 明文转密文（原功能，无偏移）
+     */
+    private fun convertPlainToCipher(plaintext: String, debugLogger: DebugLogger? = null): String {
+        debugLogger?.addSection("明文转密文（无偏移）", "开始转换...")
         debugLogger?.addLog("输入明文: $plaintext")
 
         if (codes.isEmpty()) {
@@ -71,10 +183,10 @@ class CTCHelper(private val context: Context) {
     }
 
     /**
-     * 密文转明文
+     * 密文转明文（原功能，无偏移）
      */
-    fun cipherToPlain(ciphertext: String, debugLogger: DebugLogger? = null): String {
-        debugLogger?.addSection("密文转明文", "开始转换...")
+    private fun convertCipherToPlain(ciphertext: String, debugLogger: DebugLogger? = null): String {
+        debugLogger?.addSection("密文转明文（无偏移）", "开始转换...")
         debugLogger?.addLog("输入密文: $ciphertext")
 
         if (codes.isEmpty()) {
