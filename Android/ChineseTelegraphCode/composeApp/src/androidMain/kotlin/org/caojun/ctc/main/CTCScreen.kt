@@ -1,5 +1,7 @@
 package org.caojun.ctc.main
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Preview
@@ -58,6 +64,29 @@ fun CTCScreen() {
         if (!switchChecked && tfvCiphertext.isNotEmpty()) {
             tfvCodetext = ctcHelper.plainToCipher(tfvCiphertext)
             tfvPlaintext = ctcHelper.cipherToPlain(tfvCodetext, tfvKey.toIntOrNull())
+        }
+    }
+
+    val clipboardManager = remember { context.getSystemService(ClipboardManager::class.java) }
+    // 监听生命周期
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) { // 应用退到后台时触发
+                val textToCopy = if (switchChecked) tfvCiphertext else tfvPlaintext
+                if (textToCopy.isNotEmpty()) {
+                    clipboardManager?.setPrimaryClip(
+                        ClipData.newPlainText(
+                            "CTC Result",
+                            textToCopy
+                        )
+                    )
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
